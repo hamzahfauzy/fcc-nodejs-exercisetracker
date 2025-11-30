@@ -15,7 +15,7 @@ app.get('/', (req, res) => {
 
 app.get('/api/users', (req, res) => {
   const _users = users.map(u => {
-    return {_id: u._id, username: u.username}
+    return {_id: "" + u._id, username: u.username, __v:0}
   })
   res.json(_users)
 })
@@ -24,7 +24,7 @@ app.post('/api/users', (req, res) => {
   const id = users.length + 1
   const data = {_id: id, username: req.body.username, log: []}
   users.push(data)
-  res.json({_id: id, username: req.body.username})
+  res.json({_id: "" + id, username: req.body.username})
 })
 
 app.post('/api/users/:_id/exercises', (req, res) => {
@@ -33,8 +33,8 @@ app.post('/api/users/:_id/exercises', (req, res) => {
   const description = req.body.description
   const duration = req.body.duration
   const date = req.body.date && req.body.date.trim() !== "" ? req.body.date : (new Date()).toISOString().split('T')[0]
-  const data = {_id: id, username: user.username, date, duration, description}
-  user.log.push({description, duration, date: (new Date(date)).toDateString()})
+  const data = {_id: ""+id, username: user.username, date: (new Date(date)).toDateString(), duration: Number(duration), description}
+  user.log.push({description, duration: Number(duration), date: (new Date(date)).toDateString()})
   res.json(data)
 })
 
@@ -53,13 +53,26 @@ app.get('/api/users/:_id/logs', (req, res) => {
 
     return true;
   });
-
+ 
   if (limit) {
     logs = logs.slice(0, Number(limit));
   }
-  user.count = logs.length
-  user.log = logs
-  res.json(user)
+  // user._id = "" + user._id
+  // user.count = logs.length
+  // user.log = logs
+  // res.json(user)
+  const response = {
+    _id: user._id,
+    username: user.username,
+    count: logs.length,
+    log: logs
+  }
+  if(from && to)
+  {
+    response.from = from.toDateString()
+    response.to = to.toDateString()
+  }
+  res.json(response)
 })
 
 
